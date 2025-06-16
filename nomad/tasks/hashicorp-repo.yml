@@ -1,0 +1,43 @@
+- name: Install Required Tools (Debian/Ubuntu)
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: true
+  loop:
+    - gnupg
+    - wget
+    - apt-transport-https
+  when: ansible_os_family == "Debian"
+
+- name: Download and install HashiCorp GPG key (Debian/Ubuntu)
+  ansible.builtin.shell: |
+    wget -qO - https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+  args:
+    creates: /usr/share/keyrings/hashicorp-archive-keyring.gpg
+  when: ansible_os_family == "Debian"
+
+- name: Add HashiCorp APT repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com {{ ansible_distribution_release | lower }} main"
+    filename: hashicorp
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Set HashiCorp release name fact (RedHat family)
+  ansible.builtin.set_fact:
+    hashicorp_release: >-
+      {{
+        (
+          'AmazonLinux' if ansible_distribution == 'Amazon'
+          else 'fedora' if ansible_distribution == 'Fedora'
+          else 'RHEL'
+        ) | trim
+      }}
+  when: ansible_os_family == "RedHat"
+
+- name: Download and install HashiCorp YUM/DNF repo
+  ansible.builtin.get_url:
+    url: "https://rpm.releases.hashicorp.com/{{ hashicorp_release }}/hashicorp.repo"
+    dest: /etc/yum.repos.d/hashicorp.repo
+    mode: '0644'
+  when: ansible_os_family == "RedHat"

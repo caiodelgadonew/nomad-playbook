@@ -1,0 +1,13 @@
+---
+packages:
+  - wget
+  - curl
+  - jq
+  - vim
+  - nomad
+  - consul
+
+task_drivers:
+  - podman
+  - nomad-driver-podman
+

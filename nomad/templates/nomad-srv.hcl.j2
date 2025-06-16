@@ -1,0 +1,59 @@
+datacenter = "{{ datacenter }}"
+
+name      = "{{ inventory_hostname }}.{{ domain }}"
+bind_addr = "{{ ansible_default_ipv4.address }}"
+
+data_dir   = "/opt/nomad/data"
+plugin_dir = "/opt/nomad/data/plugins"
+
+
+server {
+  enabled          = true
+  bootstrap_expect = 1
+
+  default_scheduler_config {
+        scheduler_algorithm = "spread"
+  }
+}
+
+advertise {
+  http = "{{ ansible_default_ipv4.address }}"
+  rpc  = "{{ ansible_default_ipv4.address }}"
+  serf = "{{ ansible_default_ipv4.address }}"
+}
+
+client {
+  enabled = {{ (client | default(false)) | ternary("true","false") }}
+
+  {%- if client | default(false) %}
+  host_volume "uptimekuma" {
+    path      = "/opt/uptimekuma"
+    read_only = false
+  }
+
+  host_volume "traefik" {
+    path      = "/opt/traefik"
+    read_only = false
+  }
+  {%- endif %}
+}
+
+acl {
+ enabled = true
+ token_ttl = "1h"
+ token_max_expiration_ttl = "24h"
+}
+
+consul {
+  address      = "{{ ansible_default_ipv4.address }}:8500"
+  grpc_address = "{{ ansible_default_ipv4.address }}:8500"
+
+
+  auto_advertise   = true
+  server_auto_join = true
+
+  server_service_name = "nomad-server"
+  client_service_name = "nomad-client"
+
+  tags = ["nomad-server"}
+}

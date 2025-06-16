@@ -1,0 +1,52 @@
+- name: Set list of *other* server IPv4 addresses
+  set_fact:
+    server_ipv4: >-
+      {{
+        play_hosts
+        | difference([inventory_hostname])
+        | map('extract', hostvars)
+        | selectattr('server', 'defined')
+        | selectattr('server', 'equalto', true)
+        | map(attribute='ansible_host')
+        | list
+      }}
+
+- name: Create consul client configuration file
+  ansible.builtin.template:
+      src: "templates/consul-client.hcl.j2"
+      dest:  "/etc/consul.d/consul.hcl"
+  notify:
+    - restart consul
+
+- name: Enable service Consul
+  ansible.builtin.systemd_service:
+    name: consul
+    enabled: true
+    state: started
+  notify:
+    - restart consul
+
+- name: Create nomad client configuration file
+  ansible.builtin.template:
+      src: "templates/nomad-client.hcl.j2"
+      dest:  "/etc/nomad.d/nomad.hcl"
+  notify:
+    - restart nomad
+
+- name: Ensure traefik directory exists and its owned by root
+  ansible.builtin.file:
+    path: /opt/traefik
+    state: directory
+    owner: root
+    group: root
+    recurse: true
+
+- name: Enable service Nomad
+  ansible.builtin.systemd_service:
+    name: nomad
+    enabled: true
+    daemon-reload: true
+    state: started
+  notify:
+    - restart nomad
+

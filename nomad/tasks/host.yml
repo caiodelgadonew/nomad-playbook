@@ -1,0 +1,11 @@
+- name: Set system hostname to FQDN
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}.{{ datacenter }}.{{ domain }}"
+
+
+- name: Add FQDN to /etc/hosts for local resolution
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    line: "127.0.1.1       {{ inventory_hostname }}.{{ datacenter }}.{{ domain }} {{ inventory_hostname }}"
+    state: present
+  become: true

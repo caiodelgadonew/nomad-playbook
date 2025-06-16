@@ -1,0 +1,40 @@
+- name: Create consul server configuration file
+  ansible.builtin.template:
+      src: "templates/consul-srv.hcl.j2"
+      dest:  "/etc/consul.d/consul.hcl"
+  notify:
+    - restart consul
+
+- name: Enable service Consul
+  ansible.builtin.systemd_service:
+    name: consul
+    enabled: true
+    state: started
+  notify:
+    - restart consul
+
+- name: Create nomad server configuration file
+  ansible.builtin.template:
+      src: "templates/nomad-srv.hcl.j2"
+      dest:  "/etc/nomad.d/nomad.hcl"
+  notify:
+    - restart nomad
+
+- name: Ensure traefik directories exists and its owned by root
+  ansible.builtin.file:
+    path: "/opt/traefik"
+    state: directory
+    owner: root
+    group: root
+    recurse: true
+  when: client | default(false)
+
+- name: Enable service Nomad
+  ansible.builtin.systemd_service:
+    name: nomad
+    enabled: true
+    daemon-reload: true
+    state: started
+  notify:
+    - restart nomad
+

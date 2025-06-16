@@ -1,0 +1,46 @@
+log_level  = "INFO"
+datacenter = "{{ datacenter }}"
+domain     = "{{ domain }}"
+
+server        = false
+data_dir      = "/opt/consul"
+log_level     = "INFO"
+node_name     = "{{ inventory_hostname }}.{{ domain }}"
+enable_syslog = true
+
+bind_addr      = "{{ ansible_default_ipv4.address }}"
+advertise_addr = "{{ ansible_default_ipv4.address }}"
+client_addr    = "{{ ansible_default_ipv4.address }}"
+
+retry_join = [ {% for ip in server_ipv4 %} "{{ ip }}"{% if not loop.last %},{% endif %} {% endfor %} ]
+
+connect {
+  enabled = true
+}
+
+service {
+  id      = "consul-dns"
+  name    = "consul-dns"
+  tags    = ["dns", "consul-client"]
+  address = "127.0.0.1"
+  port    = 8600
+  check {
+    id       = "dns"
+    name     = "Consul DNS TCP on port 8600"
+    tcp      = "127.0.0.1:8600"
+    interval = "10s"
+    timeout  = "1s"
+  }
+}
+
+addresses {
+  dns      = "127.0.0.1"
+  http     = "127.0.0.1"
+  https    = "127.0.0.1"
+  grpc     = "127.0.0.1"
+  grpc_tls = "127.0.0.1"
+}
+
+telemetry {
+  prometheus_retention_time = "360h"
+}

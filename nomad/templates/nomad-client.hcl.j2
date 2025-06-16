@@ -1,0 +1,48 @@
+datacenter = "{{ datacenter }}"
+
+name = "{{ inventory_hostname }}.{{ domain }}"
+
+data_dir   = "/opt/nomad"
+plugin_dir = "/opt/nomad/data/plugins"
+
+client {
+  enabled = true
+
+  servers = [
+  {% for ip in server_ipv4 %}
+  "{{ ip }}:4647"{% if not loop.last %},{% endif %}
+  {% endfor %}
+]
+
+  host_volume "traefik" {
+    path = "/opt/traefik"
+    read_only = false
+  }
+
+}
+
+consul {
+  address      = "127.0.0.1:8500"
+  grpc_address = "127.0.0.1:8500"
+
+  client_auto_join      = true
+  client_service_name   = "nomad-client"
+
+  tags = ["nomad-client"]
+}
+
+advertise {
+  http = "{{ ansible_default_ipv4.address }}"
+  rpc  = "{{ ansible_default_ipv4.address }}"
+  serf = "{{ ansible_default_ipv4.address }}"
+}
+
+plugin "nomad-driver-podman" {
+  config {
+    socket_path = "unix:///run/podman/podman.sock"
+    volumes {
+      enabled      = true
+      selinuxlabel = "z"
+    }
+  }
+}

@@ -1,0 +1,18 @@
+#SPDX-License-Identifier: MIT-0
+---
+- include_tasks: host.yml
+
+- include_tasks: hashicorp-repo.yml
+
+- include_tasks: install-packages.yml
+
+- include_tasks: server.yml
+  when: server | default(false)
+
+- include_tasks: client.yml
+  when: not server | default(false)
+
+- include_tasks: podman.yml
+
+- include_tasks: docker.yml
+  when: docker | default(false)

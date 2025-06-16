@@ -1,0 +1,55 @@
+- name: Install Docker repository on Debian-based systems
+  block:
+    - name: Ensure keyring directory exists
+      ansible.builtin.file:
+        path: /usr/share/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Download Docker GPG key (ASCII-armored)
+      ansible.builtin.get_url:
+        url: >-
+          https://download.docker.com/linux/{{
+            'ubuntu' if ansible_distribution == 'Ubuntu'
+            else 'debian'
+          }}/gpg
+        dest: /usr/share/keyrings/docker.asc
+        mode: '0644'
+
+    - name: Set Docker architecture fact
+      ansible.builtin.set_fact:
+        docker_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' if ansible_architecture == 'aarch64' else ansible_architecture }}"
+
+    - name: Add Docker APT repository
+      ansible.builtin.copy:
+        dest: /etc/apt/sources.list.d/docker.list
+        content: |
+          deb [arch={{ docker_arch }} signed-by=/usr/share/keyrings/docker.asc] https://download.docker.com/linux/{{
+            'ubuntu' if ansible_distribution == 'Ubuntu'
+            else 'debian'
+          }} {{ ansible_lsb.codename }} stable
+        mode: '0644'
+
+    - name: Update Cache
+      ansible.builtin.apt:
+        update_cache: yes
+
+  when: ansible_os_family == "Debian"
+
+
+- name: Add Docker repo (RHEL)
+  ansible.builtin.command: >
+    dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+  args:
+    creates: /etc/yum.repos.d/docker-ce.repo
+  when: ansible_os_family == "RedHat"
+
+- name: Enable Docker Service
+  ansible.builtin.systemd_service:
+    name: docker
+    enabled: true
+    daemon-reload: true
+    state: started
+  notify: restart nomad
+
+

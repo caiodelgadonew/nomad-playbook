@@ -1,0 +1,19 @@
+- name: Install dnf plugins (RHEL)
+  ansible.builtin.dnf:
+    name: dnf-plugins-core
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Install task drivers
+  ansible.builtin.package:
+    name: "{{ task_drivers }}"
+    state: present
+
+- name: Enable Podman Service
+  ansible.builtin.systemd_service:
+    name: podman
+    enabled: true
+    daemon-reload: true
+    state: started
+  notify: restart nomad
+

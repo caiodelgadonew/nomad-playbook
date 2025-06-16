@@ -1,0 +1,56 @@
+prod:
+  children:
+    nanocluster:
+  vars:
+    ansible_user: sipeed
+    ansible_ssh_pass: licheepi
+    datacenter: prod
+    domain: example.com
+    docker: false
+
+test:
+  children:
+    virtual_machines:
+  vars:
+    ansible_user: user-vm
+    ansible_ssh_pass: pass-vm
+    datacenter: test
+    domain: example.com
+    docker: false
+
+
+nanocluster:
+  hosts:
+    lpi3h-1:
+      ansible_host: 10.11.11.21
+      server: true
+      client: true
+    lpi3h-2:
+      ansible_host: 10.11.11.22
+    lpi3h-3:
+      ansible_host: 10.11.11.23
+    lpi3h-4:
+      ansible_host: 10.11.11.24
+    lpi3h-5:
+      ansible_host: 10.11.11.25
+    lpi3h-6:
+      ansible_host: 10.11.11.26
+    lpi3h-7:
+      ansible_host: 10.11.11.27
+
+virtual_machines:
+  hosts:
+    debian01:
+      ansible_host: 10.11.11.50
+      server: true
+      client: true
+    debian02:
+      ansible_host: 10.11.11.51
+    ubuntu01:
+      ansible_host: 10.11.11.52
+    ubuntu02:
+      ansible_host: 10.11.11.53
+    alma01:
+      ansible_host: 10.11.11.54
+    alma02:
+      ansible_host: 10.11.11.55

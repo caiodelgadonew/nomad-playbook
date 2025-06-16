@@ -1,0 +1,17 @@
+---
+- name: restart consul
+  ansible.builtin.systemd_service:
+    name: consul
+    daemon_reload: true
+    state: restarted
+
+- name: Wait for consul client to be ready
+  ansible.builtin.wait_for:
+    timeout: 3
+
+- name: restart nomad
+  ansible.builtin.systemd_service:
+    name: nomad
+    daemon_reload: true
+    state: restarted
+ 
