@@ -1,7 +1,7 @@
 # Nomad & Consul Cluster Playbook
 > Deploy your portable HomeLab cluster with a single command!
 
-- Companion for video: [VIDEO LINK](https://youtube.com/caiodelgadonew) (TO BE UPDATED ON VIDEO RELEASE)
+- Companion for video: [The Homelab that fits in your hand! Meet the Nanocluster](https://youtu.be/4ri2GnxCy6Y) 
 - [Nomad 101 Video](https://www.youtube.com/watch?v=ckqWFSZ2So4)
 
 This Ansible playbook bootstraps a single-server Nomad & Consul cluster (with client nodes) using Podman (or Docker) as the container runtime.
